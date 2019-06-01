@@ -1,29 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
-## Choose one of these OS options: ##
-set(CYNTH_OS "WIN")
-#set(CYNTH_OS "LINUX") # To be implemented
-
-## Choose one of these audio API options: ##
-set(CYNTH_API "WASAPI") # Only for Windows
-#set(CYNTH_API "ASIO")   # Only for Windows
-#set(CYNTH_API "ALSA")   # Only for Linux; To be implemented
-
-## Choose one of these environment options: ##
-#set(CYNTH_ENV "SHARED") # Shared library (Outputs DLL for Windows and SO for Linux)
-set(CYNTH_ENV "PY")     # Python module (Outputs PYD for Windows)
-#set(CYNTH_ENV "CLI")    # Command line interface; To be implemented
-# For static library: Just define the CYNTH_LIB_STATIC macro in your code. (TODO!)
-
-#[[ Note:
-    Unimplemented options are marked here as "(To be implemented)"
-    and incompatibility of options is always mentioned.
-    But to be sure, CYNTH_PLATFORM_IMPLEMENTED macro defined in inc/platform.hpp
-    is used to check whether the selected platform options combination is implemented.
-]]#
-
 ## Project name: ##
-project(Cynth CXX)
+project(cynth CXX)
 
 ## C++ Standard: ##
 set(CMAKE_CXX_STANDARD 17)
@@ -31,109 +9,28 @@ set(CMAKE_CXX_STANDARD 17)
 ## Warnings: ##
 set(CMAKE_CXX_FLAGS "-Wall")
 
-## Output directory: ##
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-## For Python module: ##
-if(CYNTH_ENV STREQUAL "PY")
-    include_directories(${PROJECT_SOURCE_DIR}/ext/pybind11/include) # Headers for pybind11
-    # Change to your location of Python headers:
-    include_directories(C:/Programs/Python/Python37/include) # Headers for Python
-    # Change to your location of Python executable: (Optional, but may resolve version mismatch problems.)
-    #set(PYTHON_EXECUTABLE C:/Programs/Python/Python37/python.exe) # Python executable
-    set(PYBIND11_CPP_STANDARD -std=c++1z) # Experimental support of C++17
-endif()
-
-## Cynth headers: ##
 include_directories(${PROJECT_SOURCE_DIR}/inc)
+include_directories(${PROJECT_SOURCE_DIR}/ext/ASIOSDK2.3.2/common)
+include_directories(${PROJECT_SOURCE_DIR}/ext/ASIOSDK2.3.2/host)
+include_directories(${PROJECT_SOURCE_DIR}/ext/ASIOSDK2.3.2/host/pc)
+include_directories(${PROJECT_SOURCE_DIR}/ext/gcem/include)
 
-## Cynth sources: ##
 set(SOURCES
-    # WASAPI interfaces abstractions:
-    #${PROJECT_SOURCE_DIR}/src/api/wasapi/audio_client.cpp
-    #${PROJECT_SOURCE_DIR}/src/api/wasapi/setup.cpp
-    #${PROJECT_SOURCE_DIR}/src/api/wasapi/device_collection.cpp
-    #${PROJECT_SOURCE_DIR}/src/api/wasapi/device.cpp
-    #${PROJECT_SOURCE_DIR}/src/api/wasapi/device_enumerator.cpp
-    #${PROJECT_SOURCE_DIR}/src/api/wasapi/interface.cpp
-    #${PROJECT_SOURCE_DIR}/src/api/wasapi/property_store.cpp
-    #${PROJECT_SOURCE_DIR}/src/api/wasapi/render_client.cpp
-    # Wave function abstractions:
-    #${PROJECT_SOURCE_DIR}/src/pcm/functions/conversion_function.cpp
-    #${PROJECT_SOURCE_DIR}/src/pcm/functions/conversion_functions.cpp
-    #${PROJECT_SOURCE_DIR}/src/pcm/functions/time_function.cpp
-    # PCM related abstractions:
-    #${PROJECT_SOURCE_DIR}/src/pcm/buffer.cpp
-    #${PROJECT_SOURCE_DIR}/src/pcm/sample.cpp
-    # Devices abstractions:
-    #${PROJECT_SOURCE_DIR}/src/rack/components/receiver_port.cpp
-    #${PROJECT_SOURCE_DIR}/src/rack/components/transmitter_port.cpp
-    #${PROJECT_SOURCE_DIR}/src/rack/devices/input_device.cpp
-    #${PROJECT_SOURCE_DIR}/src/rack/devices/midi_device.cpp
-    #${PROJECT_SOURCE_DIR}/src/rack/devices/oscillator.cpp
-    #${PROJECT_SOURCE_DIR}/src/rack/devices/output_device.cpp
-    # User accessible abstractions:
-    #${PROJECT_SOURCE_DIR}/src/user_library/devices/envelope.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/devices/hub.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/devices/lfo.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/devices/sequencer.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/devices/sound_card.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/devices/tone_generator.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/functions/sequence_element.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/functions/sequence_function.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/functions/wave_function.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/functions/wave_functions.cpp
-    #${PROJECT_SOURCE_DIR}/src/user_library/types.cpp
-    # Entry point for CLI and testing:
     ${PROJECT_SOURCE_DIR}/src/entry.cpp
-    # Exceptions and log:
-    ${PROJECT_SOURCE_DIR}/src/logger.cpp
-    # Passkeys:
-    #${PROJECT_SOURCE_DIR}/src/passkeys.cpp
-    # Misc. tools:
-    #${PROJECT_SOURCE_DIR}/src/tools.cpp
-)
+    ${PROJECT_SOURCE_DIR}/ext/ASIOSDK2.3.2/common/asio.cpp
+    ${PROJECT_SOURCE_DIR}/ext/ASIOSDK2.3.2/host/asiodrivers.cpp
+    ${PROJECT_SOURCE_DIR}/ext/ASIOSDK2.3.2/host/pc/asiolist.cpp)
 
-if(CYNTH_ENV STREQUAL "PY")
-    # pybind11 module export:
-    list(APPEND SOURCES ${PROJECT_SOURCE_DIR}/src/pybind11_module.cpp)
-endif()
+ADD_LIBRARY(LIBS ${SOURCES})
 
-### Platform setup: ###
-## OS: ##
-if(CYNTH_OS STREQUAL "WIN")
-    add_definitions(-DCYNTH_OS -DCYNTH_OS_WINDOWS)
-elseif(CYNTH_OS STREQUAL "LINUX")
-    add_definitions(-DCYNTH_OS -DCYNTH_OS_LINUX)
-endif()
-## Environment: ##
-if(CYNTH_ENV STREQUAL "SHARED")
-    add_definitions(-DCYNTH_ENV -DCYNTH_ENV_LIB -DCYNTH_LIB -DCYNTH_LIB_DLLBUILD)
-elseif(CYNTH_ENV STREQUAL "PY")
-    add_definitions(-DCYNTH_ENV -DCYNTH_ENV_LIB -DCYNTH_LIB -DCYNTH_LIB_PY)
-elseif(CYNTH_ENV STREQUAL "CLI")
-    add_definitions(-DCYNTH_ENV -DCYNTH_ENV_CLI)
-endif()
-## Audio API: ##
-if(CYNTH_API STREQUAL "WASAPI")
-    add_definitions(-DCYNTH_API -DCYNTH_API_WASAPI)
-elseif(CYNTH_API STREQUAL "ALSA")
-    add_definitions(-DCYNTH_API -DCYNTH_API_ALSA)
-elseif(CYNTH_API STREQUAL "ASIO")
-    add_definitions(-DCYNTH_API -DCYNTH_API_ASIO)
-endif()
+target_link_libraries(LIBS -luuid)
+target_link_libraries(LIBS -lksuser)
+target_link_libraries(LIBS -lole32)
+target_link_libraries(LIBS -lwinmm)
 
-### Build: ###
-# Shared library:
-if(CYNTH_ENV STREQUAL "SHARED")
-    add_library(Cynth SHARED ${SOURCES}) # TODO: Rename? (Remove lib prefix)
-# Python module:
-elseif(CYNTH_ENV STREQUAL "PY")
-    add_subdirectory(ext/pybind11)
-    pybind11_add_module(Cynth ${SOURCES} NO_EXTRAS)
-    #set_target_properties(Cynth PROPERTIES OUTPUT_NAME Cynth) # TODO: Rename
-# CLI:
-elseif(CYNTH_ENV STREQUAL "CLI")
-    add_executable(Cynth ${SOURCES})
-endif()
+add_executable(cynth ${SOURCES})
+
+target_link_libraries(cynth LIBS)

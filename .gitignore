@@ -4,3 +4,8 @@ ext/ASIOSDK2.3.2/*
 log/*
 *.bat
 *.o
+*.cmake
+CMakeCache.txt
+*.a
+Makefile
+CMakeFiles/*
