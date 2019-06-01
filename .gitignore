@@ -1,0 +1,6 @@
+.vscode/
+bin/*
+ext/ASIOSDK2.3.2/*
+log/*
+*.bat
+*.o
