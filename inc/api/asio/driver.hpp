@@ -5,6 +5,7 @@
 #include "exceptions.hpp"
 #include "api/asio/tools.hpp"
 #include "api/asio/buffertools.hpp"
+#include "functional.hpp"
 
 #include "wavetables.hpp"
 #include "devices/oscillator.hpp" 
@@ -99,6 +100,7 @@ namespace cynth::api::asio {
             ASIOGetSampleRate(&sample_rate) >> ase_handler{"ASIOGetSampleRate"};
             // TODO: ASIOCanSampleRate, ASIOSetSampleRate when the sample rate is not stored in the driver.
             driver::sample_rate = tools::native_floating(sample_rate);
+            wave_function::sample_rate = driver::sample_rate;
         }
 
         static void check_outready_optimization () {

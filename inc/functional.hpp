@@ -50,7 +50,7 @@ namespace cynth {
         //inline constexpr static std::size_t filter_order  = 512;
         inline constexpr static std::size_t filter_order  = 32;
 
-        inline static floating_t sample_rate   = 44100; // Default value. This should be set during API initialization.
+        inline static floating_t sample_rate   = 44100; // Only a default value. This will be set during API initialization.
         inline static floating_t sample_length = 1. / sample_rate;
 
         static floating_t floating_time (unsigned_t i) { return i * sample_length; }
